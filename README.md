@@ -1,5 +1,19 @@
-# flet-notifications
+# flet_notifications
 LocalNotifications control for Flet. Based on [flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)
+
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%">
+        <img width="100%" src="https://github.com/user-attachments/assets/b7cbd459-6fa6-4808-8d71-d54605fc85fa" alt="logo">
+      </td>
+      <td width="50%">
+        <img width="100%" src="https://github.com/user-attachments/assets/c9750064-c282-409f-a819-c884c62c3329" >
+      </td>
+    </tr>
+  </table>
+</div>
 
 ### Usage
 #### Initialization
