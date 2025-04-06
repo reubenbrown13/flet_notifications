@@ -1,3 +1,3 @@
-from flet_notifications.flet_notifications import LocalNotifications
+from flet_notifications.flet_notifications import LocalNotifications, NotificationAction
 
-__all__ = ["LocalNotifications"]
+__all__ = ["LocalNotifications", "NotificationAction"]
