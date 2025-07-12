@@ -15,7 +15,7 @@ async def main(page: ft.Page):
    async def on_notification_action(action_id, payload):
        page.open(ft.SnackBar(
            content=ft.Text(f"Action '{action_id}' received with payload: {payload}"),
-           bgcolor=ft.colors.BLUE,
+           bgcolor=ft.Colors.BLUE,
        ))
        page.update()
    
@@ -30,7 +30,7 @@ async def main(page: ft.Page):
        granted = await notifications.request_permissions()
        page.open(ft.SnackBar(
            content=ft.Text(f"Permissions {'granted' if granted else 'denied'}!"),
-           bgcolor=ft.colors.BLUE_ACCENT if granted else ft.colors.RED_ACCENT,
+           bgcolor=ft.Colors.BLUE_ACCENT if granted else ft.Colors.RED_ACCENT,
        ))
        page.update()
    
@@ -74,7 +74,7 @@ async def main(page: ft.Page):
        
        page.open(ft.SnackBar(
            content=ft.Text(f"Notification {'sent successfully' if result else 'not sent'}"),
-           bgcolor=ft.colors.GREEN_ACCENT if result else ft.colors.RED_ACCENT,
+           bgcolor=ft.Colors.GREEN_ACCENT if result else ft.Colors.RED_ACCENT,
        ))
        page.update()
    
@@ -121,7 +121,7 @@ async def main(page: ft.Page):
        
        page.open(ft.SnackBar(
            content=ft.Text(f"Notification scheduled for {scheduled_time.strftime('%H:%M:%S')}"),
-           bgcolor=ft.colors.GREEN_ACCENT if result else ft.colors.RED_ACCENT,
+           bgcolor=ft.Colors.GREEN_ACCENT if result else ft.Colors.RED_ACCENT,
        ))
        page.update()
    
@@ -169,17 +169,17 @@ async def main(page: ft.Page):
    
    # Create action buttons with Cupertino style
    perm_button = ft.CupertinoFilledButton(
-       text="Request Permissions",
+       content=ft.Text("Request Permissions"),
        on_click=request_permissions,
    )
    
    show_button = ft.CupertinoFilledButton(
-       text="Show Notification",
+       content=ft.Text("Show Notification"),
        on_click=show_notification,
    )
    
    schedule_button = ft.CupertinoFilledButton(
-       text="Schedule (10s)",
+       content=ft.Text("Schedule (10s)"),
        on_click=schedule_notification,
    )
    
@@ -187,7 +187,7 @@ async def main(page: ft.Page):
    form_card = ft.Container(
        content=ft.Column([
            ft.Text("Configure Notification", size=16, weight=ft.FontWeight.BOLD),
-           ft.Divider(height=1, color=ft.colors.BLACK12),
+           ft.Divider(height=1, color=ft.Colors.BLACK12),
            ft.Container(height=10),
            id_field,
            ft.Container(height=10),
@@ -212,12 +212,12 @@ async def main(page: ft.Page):
        ]),
        padding=15,
        border_radius=ft.border_radius.all(15),
-       bgcolor=ft.colors.WHITE,
-       border=ft.border.all(1, ft.colors.BLACK12),
+       bgcolor=ft.Colors.WHITE,
+       border=ft.border.all(1, ft.Colors.BLACK12),
        shadow=ft.BoxShadow(
            spread_radius=1,
            blur_radius=15,
-           color=ft.colors.with_opacity(0.2, ft.colors.GREY),
+           color=ft.Colors.with_opacity(0.2, ft.Colors.GREY),
            offset=ft.Offset(0, 5),
        )
    )
@@ -226,12 +226,12 @@ async def main(page: ft.Page):
    action_display = ft.Container(
        content=ft.Column([
            ft.Text("Notification Action Responses", size=16, weight=ft.FontWeight.BOLD),
-           ft.Divider(height=1, color=ft.colors.BLACK12),
+           ft.Divider(height=1, color=ft.Colors.BLACK12),
            ft.Container(
                content=ft.Text(
                    "Actions will appear here when tapped",
                    size=14,
-                   color=ft.colors.GREY,
+                   color=ft.Colors.GREY,
                    text_align=ft.TextAlign.CENTER,
                ),
                padding=20,
@@ -239,12 +239,12 @@ async def main(page: ft.Page):
        ]),
        padding=15,
        border_radius=ft.border_radius.all(15),
-       bgcolor=ft.colors.WHITE,
-       border=ft.border.all(1, ft.colors.BLACK12),
+       bgcolor=ft.Colors.WHITE,
+       border=ft.border.all(1, ft.Colors.BLACK12),
        shadow=ft.BoxShadow(
            spread_radius=1,
            blur_radius=15,
-           color=ft.colors.with_opacity(0.2, ft.colors.GREY),
+           color=ft.Colors.with_opacity(0.2, ft.Colors.GREY),
            offset=ft.Offset(0, 5),
        )
    )
@@ -263,7 +263,7 @@ async def main(page: ft.Page):
                    content=ft.Text(
                        "Note: Action handling may behave differently on each platform. On iOS, ensure notifications are enabled in settings.",
                        size=12,
-                       color=ft.colors.GREY,
+                       color=ft.Colors.GREY,
                        text_align=ft.TextAlign.CENTER,
                    ),
                    padding=ft.padding.symmetric(horizontal=20),

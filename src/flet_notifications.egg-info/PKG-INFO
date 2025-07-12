@@ -1,15 +1,19 @@
 Metadata-Version: 2.4
 Name: flet-notifications
-Version: 0.1.0
+Version: 0.1.1
 Summary: FletNotifications control for Flet
-Author-email: Flet contributors <you@example.com>
-Project-URL: Homepage, https://mydomain.dev
-Project-URL: Documentation, https://github.com/MyGithubAccount/flet-notifications
-Project-URL: Repository, https://github.com/MyGithubAccount/flet-notifications
-Project-URL: Issues, https://github.com/MyGithubAccount/flet-notifications/issues
-Requires-Python: >=3.9
+Author-email: Reuben Brown <you@example.com>
+Project-URL: Homepage, https://github.com/reubenbrown13/flet_notifications
+Project-URL: Documentation, https://github.com/reubenbrown13/flet_notifications
+Project-URL: Repository, https://github.com/reubenbrown13/flet_notifications
+Project-URL: Issues, https://github.com/reubenbrown13/flet_notifications/issues
+Requires-Python: >=3.10
 Description-Content-Type: text/markdown
-Requires-Dist: flet>=0.27.5
+Requires-Dist: flet>=0.70.0.dev5103
+Requires-Dist: flet-cli>=0.70.0.dev5103
+Requires-Dist: flet-desktop>=0.70.0.dev5103
+Requires-Dist: flet-desktop-light>=0.70.0.dev5103
+Requires-Dist: flet-permission-handler>=0.2.0.dev39
 
 # flet_notifications
 LocalNotifications control for Flet. Based on [flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)
@@ -160,7 +164,7 @@ from flet_notifications import LocalNotifications, NotificationAction
 async def main(page: ft.Page):
     # Initialize notifications
     notifications = LocalNotifications()
-    page.overlay.append(notifications)
+    page.services.append(notifications)
     
     # Create notification actions
     accept_action = NotificationAction(id="accept", title="Accept")

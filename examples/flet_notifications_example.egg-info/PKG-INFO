@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: flet-notifications-example
+Version: 1.0.1
+Author-email: Flet developer <you@example.com>
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: flet-notifications
+Requires-Dist: flet>=0.70.0.dev5103
+Requires-Dist: flet-cli>=0.70.0.dev5103
+Requires-Dist: flet-desktop>=0.70.0.dev5103
+Requires-Dist: flet-desktop-light>=0.70.0.dev5103
+Requires-Dist: flet-permission-handler>=0.2.0.dev39

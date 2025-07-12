@@ -1,0 +1,8 @@
+pyproject.toml
+flet_notifications_example/main.py
+flet_notifications_example.egg-info/PKG-INFO
+flet_notifications_example.egg-info/SOURCES.txt
+flet_notifications_example.egg-info/dependency_links.txt
+flet_notifications_example.egg-info/requires.txt
+flet_notifications_example.egg-info/top_level.txt
+flet_notifications_example/src/main.py

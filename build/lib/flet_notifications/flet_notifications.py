@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Optional
 from datetime import datetime
-from flet.core.control import Control
+from flet import Control
 
 class NotificationAction:
    """

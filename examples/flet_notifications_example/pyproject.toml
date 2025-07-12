@@ -1,15 +1,19 @@
 [project]
 name = "flet-notifications-example"
-version = "1.0.0"
+version = "1.0.1"
 description = ""
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "Flet developer", email = "you@example.com" }
 ]
 dependencies = [
   "flet-notifications",
-  "flet>=0.27.5",
+  "flet>=0.70.0.dev5103",
+  "flet-cli>=0.70.0.dev5103",
+  "flet-desktop>=0.70.0.dev5103",
+  "flet-desktop-light>=0.70.0.dev5103",
+  "flet-permission-handler>=0.2.0.dev39",
 ]
 
 [tool.flet]
@@ -31,16 +35,24 @@ copyright = "Copyright (C) 2025 by MyCompany"
 path = "src"
 
 [tool.flet.dev_packages]
-flet-notifications = "../.." # relative path
+flet-notifications = "../../" # relative path
 
 [tool.uv]
 dev-dependencies = [
-    "flet[all]==0.27.5",
+    "flet>=0.70.0.dev5103",
+    "flet-cli>=0.70.0.dev5103",
+    "flet-desktop>=0.70.0.dev5103",
+    "flet-desktop-light>=0.70.0.dev5103",
+    "flet-permission-handler>=0.2.0.dev39",
 ]
 
 [tool.uv.sources]
 flet-notifications = { path = "../../", editable = true }
 
 [tool.poetry.group.dev.dependencies]
-flet = {extras = ["all"], version = "0.27.5"}
+flet = {version = "0.70.0.dev5103"}
+flet-cli = {version = "0.70.0.dev5103"}
+flet-desktop = {version = "0.70.0.dev5103"}
+flet-desktop-light = {version = "0.70.0.dev5103"}
+flet-permission-handler = {version = "0.2.0.dev39"}
 flet-notifications = {path = "../../", develop = true}

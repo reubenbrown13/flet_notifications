@@ -1,1 +1,5 @@
-flet>=0.27.5
+flet>=0.70.0.dev5103
+flet-cli>=0.70.0.dev5103
+flet-desktop>=0.70.0.dev5103
+flet-desktop-light>=0.70.0.dev5103
+flet-permission-handler>=0.2.0.dev39

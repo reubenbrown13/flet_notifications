@@ -1,32 +1,44 @@
 [project]
 name = "flet-notifications"
-version = "0.1.0"
+version = "0.1.1"
 description = "FletNotifications control for Flet"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
-    { name = "Flet contributors", email = "you@example.com" }
+    { name = "Reuben Brown", email = "you@example.com" }
 ]
 dependencies = [
-    "flet>=0.27.5",
+    "flet>=0.70.0.dev5103",
+    "flet-cli>=0.70.0.dev5103",
+    "flet-desktop>=0.70.0.dev5103",
+    "flet-desktop-light>=0.70.0.dev5103",
+    "flet-permission-handler>=0.2.0.dev39",
 ]
 
 [project.urls]
-Homepage = "https://mydomain.dev"
-Documentation = "https://github.com/MyGithubAccount/flet-notifications"
-Repository = "https://github.com/MyGithubAccount/flet-notifications"
-Issues = "https://github.com/MyGithubAccount/flet-notifications/issues"
+Homepage = "https://github.com/reubenbrown13/flet_notifications"
+Documentation = "https://github.com/reubenbrown13/flet_notifications"
+Repository = "https://github.com/reubenbrown13/flet_notifications"
+Issues = "https://github.com/reubenbrown13/flet_notifications/issues"
 
 [tool.setuptools.package-data]
 "flutter.flet_notifications" = ["**/*"]
 
 [tool.uv]
 dev-dependencies = [
-    "flet[all]==0.27.5",
+    "flet>=0.70.0.dev5103",
+    "flet-cli>=0.70.0.dev5103",
+    "flet-desktop>=0.70.0.dev5103",
+    "flet-desktop-light>=0.70.0.dev5103",
+    "flet-permission-handler>=0.2.0.dev39",
 ]
 
 [tool.poetry.group.dev.dependencies]
-flet = {extras = ["all"], version = "0.27.5"}
+flet = {version = "0.70.0.dev5103"}
+flet-cli = {version = "0.70.0.dev5103"}
+flet-desktop = {version = "0.70.0.dev5103"}
+flet-desktop-light = {version = "0.70.0.dev5103"}
+flet-permission-handler = {version = "0.2.0.dev39"}
 
 [tool.setuptools]
 license-files = []

@@ -147,7 +147,7 @@ from flet_notifications import LocalNotifications, NotificationAction
 async def main(page: ft.Page):
     # Initialize notifications
     notifications = LocalNotifications()
-    page.overlay.append(notifications)
+    page.services.append(notifications)
     
     # Create notification actions
     accept_action = NotificationAction(id="accept", title="Accept")
