@@ -4,12 +4,13 @@ from flet_notifications import LocalNotifications, NotificationAction
 
 async def main(page: ft.Page):
    page.title = "Flet Notifications Example"
-   page.theme_mode = ft.ThemeMode.LIGHT
+   page.theme_mode = ft.ThemeMode.DARK
    
    # Set iOS-like padding for the page
    page.padding = 20
    page.window.width = 400
    page.window.height = 700
+   page.scroll = ft.ScrollMode.ADAPTIVE
    
    # Handle notification actions
    async def on_notification_action(action_id, payload):
@@ -129,26 +130,26 @@ async def main(page: ft.Page):
    id_field = ft.CupertinoTextField(
        placeholder_text="Notification ID",
        value="0",
-       border_radius=ft.border_radius.all(8),
+       border_radius=ft.BorderRadius.all(8),
    )
    
    title_field = ft.CupertinoTextField(
        placeholder_text="Title",
        value="Test Notification",
-       border_radius=ft.border_radius.all(8),
+       border_radius=ft.BorderRadius.all(8),
    )
    
    body_field = ft.CupertinoTextField(
        placeholder_text="Body",
        value="This is a test message",
-       border_radius=ft.border_radius.all(8),
+       border_radius=ft.BorderRadius.all(8),
        max_lines=3,
    )
    
    payload_field = ft.CupertinoTextField(
        placeholder_text="Payload (optional)",
        value="test-payload-123",
-       border_radius=ft.border_radius.all(8),
+       border_radius=ft.BorderRadius.all(8),
    )
    
    # Create checkboxes for notification actions
@@ -211,9 +212,8 @@ async def main(page: ft.Page):
            ], wrap=True, spacing=10),
        ]),
        padding=15,
-       border_radius=ft.border_radius.all(15),
-       bgcolor=ft.Colors.WHITE,
-       border=ft.border.all(1, ft.Colors.BLACK12),
+       border_radius=ft.BorderRadius.all(15),
+       border=ft.Border.all(1, ft.Colors.BLACK12),
        shadow=ft.BoxShadow(
            spread_radius=1,
            blur_radius=15,
@@ -238,9 +238,8 @@ async def main(page: ft.Page):
            ),
        ]),
        padding=15,
-       border_radius=ft.border_radius.all(15),
-       bgcolor=ft.Colors.WHITE,
-       border=ft.border.all(1, ft.Colors.BLACK12),
+       border_radius=ft.BorderRadius.all(15),
+       border=ft.Border.all(1, ft.Colors.BLACK12),
        shadow=ft.BoxShadow(
            spread_radius=1,
            blur_radius=15,
@@ -266,11 +265,11 @@ async def main(page: ft.Page):
                        color=ft.Colors.GREY,
                        text_align=ft.TextAlign.CENTER,
                    ),
-                   padding=ft.padding.symmetric(horizontal=20),
+                   padding=ft.Padding.symmetric(horizontal=20),
                ),
            ]),
-           padding=ft.padding.only(bottom=30),
+           padding=ft.Padding.only(bottom=30),
        )
    )
 
-ft.app(main)
+ft.run(main)

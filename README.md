@@ -178,6 +178,11 @@ async def main(page: ft.Page):
 ft.app(main)
 ```
 
+## Testing
+You can't use flet run for testing the notifications, but you have to build the applicaiton.  
+To build for android: flet build apk.
+To build for linux: flet build -o [path]
+
 Note: The availability and appearance of notification actions may vary depending on the platform (iOS, Android, macOS).
 ```
 
