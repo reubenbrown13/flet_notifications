@@ -8,11 +8,9 @@ authors = [
     { name = "Reuben Brown", email = "you@example.com" }
 ]
 dependencies = [
-    "flet>=0.70.0.dev5103",
-    "flet-cli>=0.70.0.dev5103",
-    "flet-desktop>=0.70.0.dev5103",
-    "flet-desktop-light>=0.70.0.dev5103",
-    "flet-permission-handler>=0.2.0.dev39",
+    "flet>=0.70.0.dev5463",
+    "flet-cli>=0.70.0.dev5463",
+    "flet-permission-handler>=0.2.0.dev60",
 ]
 
 [project.urls]
@@ -26,19 +24,15 @@ Issues = "https://github.com/reubenbrown13/flet_notifications/issues"
 
 [tool.uv]
 dev-dependencies = [
-    "flet>=0.70.0.dev5103",
-    "flet-cli>=0.70.0.dev5103",
-    "flet-desktop>=0.70.0.dev5103",
-    "flet-desktop-light>=0.70.0.dev5103",
-    "flet-permission-handler>=0.2.0.dev39",
+    "flet>=0.70.0.dev5463",
+    "flet-cli>=0.70.0.dev5463",
+    "flet-permission-handler>=0.2.0.dev60",
 ]
 
 [tool.poetry.group.dev.dependencies]
-flet = {version = "0.70.0.dev5103"}
-flet-cli = {version = "0.70.0.dev5103"}
-flet-desktop = {version = "0.70.0.dev5103"}
-flet-desktop-light = {version = "0.70.0.dev5103"}
-flet-permission-handler = {version = "0.2.0.dev39"}
+flet = {version = "0.70.0.dev5463"}
+flet-cli = {version = "0.70.0.dev5463"}
+flet-permission-handler = {version = "0.2.0.dev60"}
 
 [tool.setuptools]
 license-files = []

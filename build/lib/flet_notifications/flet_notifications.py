@@ -1,8 +1,11 @@
 import json
+import flet as ft
+
 from typing import Any, Dict, List, Optional
 from datetime import datetime
 from flet import Control
 
+@ft.control("NotificationAction")
 class NotificationAction:
    """
    Represents an action button in a notification.
@@ -32,6 +35,7 @@ class NotificationAction:
        """String representation for passing to the Dart side."""
        return f"{self.id}|{self.title}|{str(self.destructive).lower()}|{str(self.foreground).lower()}"
 
+@ft.control("LocalNotifications")
 class LocalNotifications(Control):
     """
     A Flet control for managing local notifications.
@@ -55,13 +59,10 @@ class LocalNotifications(Control):
         )
         
         self.on_notification_action = on_notification_action
+        self.notification_action = self._notification_action_handler(self)
 
     def _get_control_name(self):
         return "flet_notifications"
-   
-    def build(self):
-        self._add_event_handler("notification_action", self._notification_action_handler)
-        super().build()
    
     async def _notification_action_handler(self, e):
         if self.on_notification_action is not None:
@@ -119,7 +120,7 @@ class LocalNotifications(Control):
        if actions:
            args["actions"] = ",".join(str(action) for action in actions)
        
-       result = await self.invoke_method_async("show_notification", args)
+       result = await self._invoke_method_async("show_notification", args)
        return result == "ok"
    
     async def schedule_notification(
@@ -158,7 +159,7 @@ class LocalNotifications(Control):
        if actions:
            args["actions"] = ",".join(str(action) for action in actions)
        
-       result = await self.invoke_method_async("schedule_notification", args)
+       result = await self._invoke_method_async("schedule_notification", args)
        return result == "ok"
    
     async def request_permissions(self) -> bool:
@@ -168,5 +169,5 @@ class LocalNotifications(Control):
        Returns:
            True if permissions were granted, False otherwise
        """
-       result = await self.invoke_method_async("request_permissions", {})
+       result = await self._invoke_method_async("request_permissions", {})
        return result.lower() == "true"
