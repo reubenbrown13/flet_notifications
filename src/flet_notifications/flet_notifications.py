@@ -59,13 +59,10 @@ class LocalNotifications(Control):
         )
         
         self.on_notification_action = on_notification_action
+        self.notification_action = self._notification_action_handler(self)
 
     def _get_control_name(self):
         return "flet_notifications"
-   
-    def build(self):
-        self._add_event_handler("notification_action", self._notification_action_handler)
-        super().build()
    
     async def _notification_action_handler(self, e):
         if self.on_notification_action is not None:
