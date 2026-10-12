@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:flet/flet.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
-import 'dart:convert';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -88,6 +89,10 @@ class NotificationService {
           ],
         );
     
+    // Linux initialization (required when running on Linux)
+    const LinuxInitializationSettings initializationSettingsLinux =
+        LinuxInitializationSettings(defaultActionName: 'Open notification');
+ 
     // Combine settings
     final InitializationSettings initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid,
@@ -117,8 +122,16 @@ class NotificationService {
     _onActionCallback = callback;
   }
 
-  // Show a notification with actions
-  Future<void> showNotification(
+  /// Clears the callback, but only if it is still [callback]. This keeps a
+  /// disposed service from removing the callback of a newer one.
+  void clearActionCallback(Function(String, String) callback) {
+    if (identical(_onActionCallback, callback)) {
+      _onActionCallback = null;
+    }
+  }
+
+  // Show a notification with actions. Returns true on success.
+  Future<bool> showNotification(
     int id, 
     String title, 
     String body, 
@@ -179,13 +192,15 @@ class NotificationService {
         payload: payload,
       );
       debugPrint('Notification shown successfully: ID=$id, Title=$title');
+      return true;
     } catch (e) {
       debugPrint('Error showing notification: $e');
+      return false;
     }
   }
   
-  // Schedule a notification
-  Future<void> scheduleNotification(
+  // Schedule a notification. Returns true on success.
+  Future<bool> scheduleNotification(
     int id,
     String title,
     String body,
@@ -249,8 +264,10 @@ class NotificationService {
         payload: payload,
       );
       debugPrint('Notification scheduled successfully for: ${scheduledDate.toString()}');
+      return true;
     } catch (e) {
       debugPrint('Error scheduling notification: $e');
+      return false;
     }
   }
   
@@ -320,151 +337,110 @@ class NotificationActionData {
   });
 }
 
-class FletNotificationsControl extends StatefulWidget {
-  final Control? parent;
-  final Control control;
-  final List<Control> children;
-  final FletControlBackend backend;
+/// Flet 1.0 service exposing [NotificationService] to Python as
+/// `LocalNotifications`.
+class LocalNotificationsService extends FletService {
+  LocalNotificationsService({required super.control});
 
-  const FletNotificationsControl({
-    Key? key,
-    required this.parent,
-    required this.control,
-    required this.children,
-    required this.backend,
-  }) : super(key: key);
-
-  @override
-  State<FletNotificationsControl> createState() => _FletNotificationsControlState();
-}
-
-class _FletNotificationsControlState extends State<FletNotificationsControl> {
   final NotificationService _notificationService = NotificationService();
-  
+
+  late final void Function(String, String) _onAction =
+      (String actionId, String payload) {
+    control.triggerEvent("notification_action", {
+      "action_id": actionId,
+      "payload": payload,
+    });
+  };
+
   @override
-  void initState() {
-    super.initState();
-    _initializeNotifications();
-    _subscribeMethods();
+  void init() {
+    super.init();
+    control.addInvokeMethodListener(_invokeMethod);
+    unawaited(_initializeNotifications());
   }
 
   Future<void> _initializeNotifications() async {
-    await _notificationService.initialize();
-    
-    _notificationService.setActionCallback((actionId, payload) {
-      // Forward the action to Python side
-      widget.backend.triggerControlEvent(
-        widget.control.id, 
-        "notification_action",
-        json.encode({"actionId": actionId, "payload": payload})
-      );
-    });
+    try {
+      await _notificationService.initialize();
+      _notificationService.setActionCallback(_onAction);
+    } catch (e) {
+      debugPrint('Error initializing LocalNotifications: $e');
+    }
   }
 
-  void _subscribeMethods() {
-    widget.backend.subscribeMethods(widget.control.id, _handleMethods);
-  }
+  int _parseId(dynamic value) => value is num ? value.toInt() : 0;
 
-  // Parse actions from string format
-  List<NotificationActionData>? _parseActions(String? actionsStr) {
-    if (actionsStr == null || actionsStr.isEmpty) {
+  // Actions arrive from Python as a list of
+  // {id, title, destructive, foreground} maps.
+  List<NotificationActionData>? _parseActions(dynamic raw) {
+    if (raw is! List || raw.isEmpty) {
       return null;
     }
-    
-    List<NotificationActionData> actions = [];
-    List<String> actionItems = actionsStr.split(',');
-    
-    for (String actionItem in actionItems) {
-      List<String> parts = actionItem.split('|');
-      if (parts.length >= 2) {
-        String id = parts[0];
-        String title = parts[1];
-        bool destructive = parts.length > 2 ? parts[2] == 'true' : false;
-        bool foreground = parts.length > 3 ? parts[3] == 'true' : true;
-        
-        actions.add(NotificationActionData(
-          id: id,
-          title: title,
-          destructive: destructive,
-          foreground: foreground,
-        ));
+
+    final actions = <NotificationActionData>[];
+    for (final item in raw) {
+      if (item is! Map) {
+        continue;
       }
+      final id = item["id"]?.toString();
+      final title = item["title"]?.toString();
+      if (id == null || title == null) {
+        continue;
+      }
+      actions.add(NotificationActionData(
+        id: id,
+        title: title,
+        destructive: item["destructive"] == true,
+        foreground: item["foreground"] != false,
+      ));
     }
-    
+
     return actions.isNotEmpty ? actions : null;
   }
 
-  Future<String?> _handleMethods(String methodName, Map<String, String> args) async {
-    debugPrint('Method called: $methodName with arguments: $args');
-    
-    switch (methodName) {
+  Future<dynamic> _invokeMethod(String name, dynamic args) async {
+    debugPrint('LocalNotifications.$name($args)');
+    final map = args is Map ? Map<String, dynamic>.from(args) : <String, dynamic>{};
+
+    switch (name) {
       case 'show_notification':
-        final id = int.tryParse(args['id'] ?? '0') ?? 0;
-        final title = args['title'] ?? '';
-        final body = args['body'] ?? '';
-        final payload = args['payload'];
-        final actionsStr = args['actions'];
-        
-        final actions = _parseActions(actionsStr);
-        
-        await _notificationService.showNotification(
-          id, 
-          title, 
-          body, 
-          payload: payload,
-          actions: actions
+        return _notificationService.showNotification(
+          _parseId(map['id']),
+          (map['title'] as String?) ?? '',
+          (map['body'] as String?) ?? '',
+          payload: map['payload'] as String?,
+          actions: _parseActions(map['actions']),
         );
-        return 'ok';
-      
+
       case 'schedule_notification':
-        final id = int.tryParse(args['id'] ?? '0') ?? 0;
-        final title = args['title'] ?? '';
-        final body = args['body'] ?? '';
-        final payload = args['payload'];
-        final dateTimeStr = args['scheduled_date'] ?? '';
-        final actionsStr = args['actions'];
-        
-        if (dateTimeStr.isEmpty) {
-          return 'error:missing_date';
+        final scheduledDate =
+            DateTime.tryParse((map['scheduled_date'] as String?) ?? '');
+        if (scheduledDate == null) {
+          debugPrint('LocalNotifications: invalid or missing scheduled_date');
+          return false;
         }
-        
-        try {
-          final scheduledDate = DateTime.parse(dateTimeStr);
-          final actions = _parseActions(actionsStr);
-          
-          await _notificationService.scheduleNotification(
-            id, 
-            title, 
-            body, 
-            scheduledDate, 
-            payload: payload,
-            actions: actions
-          );
-          return 'ok';
-        } catch (e) {
-          debugPrint('Error parsing date: $e');
-          return 'error:invalid_date';
-        }
-      
+        return _notificationService.scheduleNotification(
+          _parseId(map['id']),
+          (map['title'] as String?) ?? '',
+          (map['body'] as String?) ?? '',
+          scheduledDate,
+          payload: map['payload'] as String?,
+          actions: _parseActions(map['actions']),
+        );
+
       case 'request_permissions':
-        final result = await _notificationService.requestPermissions();
-        return result.toString();
-      
+        final granted = await _notificationService.requestPermissions();
+        return granted == true;
+
       default:
-        debugPrint('Unrecognized method: $methodName');
-        return null;
+        throw Exception('Unknown LocalNotifications method: $name');
     }
   }
 
   @override
   void dispose() {
-    widget.backend.unsubscribeMethods(widget.control.id);
+    control.removeInvokeMethodListener(_invokeMethod);
+    _notificationService.clearActionCallback(_onAction);
     super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Non-visual control
-    return const SizedBox.shrink();
   }
 }

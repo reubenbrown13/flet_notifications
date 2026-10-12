@@ -9,8 +9,7 @@ authors = [
 ]
 dependencies = [
   "flet-notifications",
-  "flet>=0.70.0.dev5463",
-  "flet-permission-handler>=0.2.0.dev60",
+  "flet>=1.0.0",
 ]
 
 [tool.flet]
@@ -36,20 +35,12 @@ flet-notifications = "../../" # relative path
 
 [tool.uv]
 dev-dependencies = [
-    "flet>=0.70.0.dev5463",
-    "flet-cli>=0.70.0.dev5463",
-    "flet-desktop>=0.70.0.dev5463",
-    "flet-desktop-light>=0.70.0.dev5463",
-    "flet-permission-handler>=0.2.0.dev60",
+    "flet[all]>=1.0.0",
 ]
 
 [tool.uv.sources]
 flet-notifications = { path = "../../", editable = true }
 
 [tool.poetry.group.dev.dependencies]
-flet = {version = "0.70.0.dev5463"}
-flet-cli = {version = "0.70.0.dev5463"}
-flet-desktop = {version = "0.70.0.dev5463"}
-flet-desktop-light = {version = "0.70.0.dev5463"}
-flet-permission-handler = {version = "0.2.0.dev60"}
+flet = {extras = ["all"], version = ">=1.0.0"}
 flet-notifications = {path = "../../", develop = true}

@@ -1,173 +1,124 @@
-import json
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Optional
+
 import flet as ft
 
-from typing import Any, Dict, List, Optional
-from datetime import datetime
-from flet import Control
+__all__ = ["LocalNotifications", "NotificationAction", "NotificationActionEvent"]
 
-@ft.control("NotificationAction")
+
+@dataclass
 class NotificationAction:
-   """
-   Represents an action button in a notification.
-   """
-   def __init__(
-       self,
-       id: str,
-       title: str,
-       destructive: bool = False,
-       foreground: bool = True
-   ):
-       """
-       Initialize a notification action.
-       
-       Args:
-           id: Unique identifier for the action
-           title: Display text for the action button
-           destructive: Whether the action is destructive (e.g. delete)
-           foreground: Whether tapping the action should bring the app to the foreground
-       """
-       self.id = id
-       self.title = title
-       self.destructive = destructive
-       self.foreground = foreground
-   
-   def __str__(self) -> str:
-       """String representation for passing to the Dart side."""
-       return f"{self.id}|{self.title}|{str(self.destructive).lower()}|{str(self.foreground).lower()}"
+    """An action button shown on a notification."""
+
+    id: str
+    """Unique identifier reported back in `on_notification_action`."""
+
+    title: str
+    """Text displayed on the button."""
+
+    destructive: bool = False
+    """Whether the action is destructive (shown in red on iOS/macOS)."""
+
+    foreground: bool = True
+    """Whether tapping the action brings the app to the foreground."""
+
+    def _to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "destructive": self.destructive,
+            "foreground": self.foreground,
+        }
+
+
+@dataclass
+class NotificationActionEvent(ft.Event["LocalNotifications"]):
+    """A notification (or one of its action buttons) was tapped."""
+
+    action_id: str
+    """The `NotificationAction.id` that was pressed, or `"tap"` when the
+    notification body itself was tapped."""
+
+    payload: str
+    """The payload the notification was created with (empty string if none)."""
+
 
 @ft.control("LocalNotifications")
-class LocalNotifications(Control):
+class LocalNotifications(ft.Service):
     """
-    A Flet control for managing local notifications.
-    
-    This control integrates the flutter_local_notifications package and provides
-    a Python interface for sending local notifications from a Flet app.
+    Local notifications, based on the `flutter_local_notifications` package.
+
+    This is a non-visual service control. Methods are coroutines and must be
+    awaited.
     """
 
-    def __init__(
-        self,
-        tooltip: Optional[str] = None,
-        visible: Optional[bool] = None,
-        data: Any = None,
-        on_notification_action: Optional[callable] = None,
-    ):
-        Control.__init__(
-            self,
-            tooltip=tooltip,
-            visible=visible,
-            data=data,
-        )
-        
-        self.on_notification_action = on_notification_action
-        self.notification_action = self._notification_action_handler(self)
-
-    def _get_control_name(self):
-        return "flet_notifications"
-   
-    async def _notification_action_handler(self, e):
-        if self.on_notification_action is not None:
-            try:
-                # The event data might be directly available or nested
-                if hasattr(e, 'data') and e.data:
-                    if isinstance(e.data, str):
-                        action_data = json.loads(e.data)
-                        action_id = action_data.get("actionId", "unknown")
-                        payload = action_data.get("payload", "")
-                    else:
-                        # If data is already parsed
-                        action_id = e.data.get("actionId", "unknown")
-                        payload = e.data.get("payload", "")
-                else:
-                    # Fallback to using the event object directly
-                    action_id = getattr(e, "actionId", "unknown")
-                    payload = getattr(e, "payload", "")
-                
-                # Call the user's callback with the action ID and payload
-                await self.on_notification_action(action_id, payload)
-            except Exception as ex:
-                print(f"Error handling notification action: {ex}")
+    on_notification_action: Optional[ft.EventHandler[NotificationActionEvent]] = None
+    """Called when the user taps a notification or one of its action buttons."""
 
     async def show_notification(
-       self, 
-       id: int, 
-       title: str, 
-       body: str, 
-       payload: Optional[str] = None,
-       actions: Optional[List[NotificationAction]] = None
-   ) -> bool:
-       """
-       Show a notification with optional interactive action buttons.
-       
-       Args:
-           id: Unique identifier for the notification
-           title: Title of the notification
-           body: Body text of the notification
-           payload: Optional data to associate with the notification
-           actions: Optional list of NotificationAction objects to display as buttons
-           
-       Returns:
-           True if the notification was sent successfully, False otherwise
-       """
-       args = {
-           "id": str(id),
-           "title": title,
-           "body": body,
-       }
-       
-       if payload:
-           args["payload"] = payload
-           
-       if actions:
-           args["actions"] = ",".join(str(action) for action in actions)
-       
-       result = await self._invoke_method_async("show_notification", args)
-       return result == "ok"
-   
+        self,
+        id: int,
+        title: str,
+        body: str,
+        payload: Optional[str] = None,
+        actions: Optional[list[NotificationAction]] = None,
+        timeout: Optional[float] = None,
+    ) -> bool:
+        """
+        Show a notification immediately.
+
+        Returns:
+            `True` if the notification was shown, `False` otherwise.
+        """
+        result = await self._invoke_method(
+            "show_notification",
+            {
+                "id": id,
+                "title": title,
+                "body": body,
+                "payload": payload,
+                "actions": [a._to_dict() for a in actions] if actions else None,
+            },
+            timeout=timeout,
+        )
+        return bool(result)
+
     async def schedule_notification(
-       self, 
-       id: int, 
-       title: str, 
-       body: str, 
-       scheduled_date: datetime,
-       payload: Optional[str] = None,
-       actions: Optional[List[NotificationAction]] = None
-   ) -> bool:
-       """
-       Schedule a notification for a future time with optional action buttons.
-       
-       Args:
-           id: Unique identifier for the notification
-           title: Title of the notification
-           body: Body text of the notification
-           scheduled_date: The date and time to show the notification
-           payload: Optional data to associate with the notification
-           actions: Optional list of NotificationAction objects to display as buttons
-           
-       Returns:
-           True if the notification was scheduled successfully, False otherwise
-       """
-       args = {
-           "id": str(id),
-           "title": title,
-           "body": body,
-           "scheduled_date": scheduled_date.isoformat(),
-       }
-       
-       if payload:
-           args["payload"] = payload
-           
-       if actions:
-           args["actions"] = ",".join(str(action) for action in actions)
-       
-       result = await self._invoke_method_async("schedule_notification", args)
-       return result == "ok"
-   
-    async def request_permissions(self) -> bool:
-       """
-       Request notification permissions from the user.
-       
-       Returns:
-           True if permissions were granted, False otherwise
-       """
-       result = await self._invoke_method_async("request_permissions", {})
-       return result.lower() == "true"
+        self,
+        id: int,
+        title: str,
+        body: str,
+        scheduled_date: datetime,
+        payload: Optional[str] = None,
+        actions: Optional[list[NotificationAction]] = None,
+        timeout: Optional[float] = None,
+    ) -> bool:
+        """
+        Schedule a notification for a future date and time.
+
+        Returns:
+            `True` if the notification was scheduled, `False` otherwise.
+        """
+        result = await self._invoke_method(
+            "schedule_notification",
+            {
+                "id": id,
+                "title": title,
+                "body": body,
+                "scheduled_date": scheduled_date.isoformat(),
+                "payload": payload,
+                "actions": [a._to_dict() for a in actions] if actions else None,
+            },
+            timeout=timeout,
+        )
+        return bool(result)
+
+    async def request_permissions(self, timeout: Optional[float] = None) -> bool:
+        """
+        Ask the user for permission to show notifications.
+
+        Returns:
+            `True` if permission was granted, `False` otherwise.
+        """
+        return bool(await self._invoke_method("request_permissions", timeout=timeout))

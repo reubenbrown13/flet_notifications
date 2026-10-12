@@ -1,207 +1,110 @@
 Metadata-Version: 2.4
 Name: flet-notifications
-Version: 0.1.1
+Version: 0.2.0
 Summary: FletNotifications control for Flet
-Author-email: Reuben Brown <you@example.com>
-Project-URL: Homepage, https://github.com/reubenbrown13/flet_notifications
-Project-URL: Documentation, https://github.com/reubenbrown13/flet_notifications
-Project-URL: Repository, https://github.com/reubenbrown13/flet_notifications
-Project-URL: Issues, https://github.com/reubenbrown13/flet_notifications/issues
+Author-email: Flet contributors <you@example.com>
+Project-URL: Homepage, https://mydomain.dev
+Project-URL: Documentation, https://github.com/MyGithubAccount/flet-notifications
+Project-URL: Repository, https://github.com/MyGithubAccount/flet-notifications
+Project-URL: Issues, https://github.com/MyGithubAccount/flet-notifications/issues
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
-Requires-Dist: flet>=0.70.0.dev5103
-Requires-Dist: flet-cli>=0.70.0.dev5103
-Requires-Dist: flet-desktop>=0.70.0.dev5103
-Requires-Dist: flet-desktop-light>=0.70.0.dev5103
-Requires-Dist: flet-permission-handler>=0.2.0.dev39
+Requires-Dist: flet>=1.0.0
 
 # flet_notifications
-LocalNotifications control for Flet. Based on [flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)
 
+`LocalNotifications` service for Flet 1.0+, based on
+[flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications).
 
-<div align="center">
-  <table>
-    <tr>
-      <td width="50%">
-        <video width="100%" src="https://github.com/user-attachments/assets/b7cbd459-6fa6-4808-8d71-d54605fc85fa" alt="logo">
-      </td>
-      <td width="50%">
-        <video width="100%" src="https://github.com/user-attachments/assets/c9750064-c282-409f-a819-c884c62c3329" >
-      </td>
-    </tr>
-  </table>
-</div>
+Requires `flet>=1.0.0`. For Flet 0.27 use the 0.1.x releases.
 
-### Usage
-#### Initialization
-```python
-# import the control
-from flet_notifications import LocalNotifications
-# initialize it
-notifications = LocalNotifications()
-# add it to the page overlay (since it's non visual)
-page.overlay.append(notifications)
-```
+## Usage
 
-#### methods
-```python
-async def show_notification(
-    id: int, 
-    title: str, 
-    body: str, 
-    payload: Optional[str] = None,
-    actions: Optional[List[NotificationAction]] = None
-) -> bool
- ```
-
-Displays a local notification with the specified title, body, payload, and optional actions.
-
-Parameters:
-
-- id ( int ): Unique identifier for the notification.
-- title ( str ): Title of the notification.
-- body ( str ): Body content of the notification.
-- payload ( Optional[str] ): Optional payload that can be used when the notification is tapped.
-- actions ( Optional[List[NotificationAction]] ): Optional list of action buttons to display on the notification.
-Returns:
-
-- bool : True if the notification was successfully shown, False otherwise.
-
-
-```python
-async def schedule_notification(
-    id: int, 
-    title: str, 
-    body: str, 
-    scheduled_date: datetime,
-    payload: Optional[str] = None,
-    actions: Optional[List[NotificationAction]] = None
-) -> bool
- ```
-
-Schedules a local notification to be displayed at a specific date and time.
-
-Parameters:
-
-- id ( int ): Unique identifier for the notification.
-- title ( str ): Title of the notification.
-- body ( str ): Body content of the notification.
-- scheduled_date ( datetime ): Date and time when the notification should be displayed.
-- payload ( Optional[str] ): Optional payload that can be used when the notification is tapped.
-- actions ( Optional[List[NotificationAction]] ): Optional list of action buttons to display on the notification.
-Returns:
-
-- bool : True if the notification was successfully scheduled, False otherwise.
-
-
-```python
-async def request_permissions() -> bool
-```
-
-Requests permissions for displaying notifications.
-
-Returns:
-
-- bool : True if permissions were granted, False otherwise.
-
-### Notification Actions
-
-The `NotificationAction` class allows you to add interactive buttons to your notifications. Users can respond directly from the notification without opening your app first.
-
-```python
-from flet_notifications import NotificationAction
-
-# Create notification actions
-accept_action = NotificationAction(
-    id="accept", 
-    title="Accept", 
-    foreground=True
-)
-
-decline_action = NotificationAction(
-    id="decline", 
-    title="Decline", 
-    destructive=True, 
-    foreground=False
-)
-
-# Show notification with actions
-await notifications.show_notification(
-    id=1,
-    title="Meeting Invitation",
-    body="You have been invited to a team meeting at 3:00 PM",
-    actions=[accept_action, decline_action]
-)
-```
-
-#### NotificationAction Parameters
-
-```python
-class NotificationAction:
-    def __init__(
-        id: str,
-        title: str,
-        destructive: bool = False,
-        foreground: bool = True
-    )
-```
-
-- id ( str ): Unique identifier for the action that your app can use to determine which button was pressed.
-- title ( str ): The text displayed on the action button.
-- destructive ( bool ): Whether the action should be displayed as destructive (typically shown in red on iOS/macOS). Default is False.
-- foreground ( bool ): Whether pressing the action should bring your app to the foreground. Default is True.
-
-#### Handling Action Responses
-
-When a user taps on a notification action, your app will receive an event with the action ID. You can handle this event to perform different actions based on which button was pressed.
-
-Example:
+`LocalNotifications` is a non-visual **service**, not a visual control: do not
+add it to `page.overlay` or `page.controls`.
 
 ```python
 import flet as ft
-from flet_notifications import LocalNotifications, NotificationAction
+from flet_notifications import LocalNotifications
+
 
 async def main(page: ft.Page):
-    # Initialize notifications
     notifications = LocalNotifications()
-    page.services.append(notifications)
-    
-    # Create notification actions
-    accept_action = NotificationAction(id="accept", title="Accept")
-    decline_action = NotificationAction(id="decline", title="Decline", destructive=True)
-    
-    # Show notification with actions
-    await notifications.show_notification(
-        id=1,
-        title="Meeting Invitation",
-        body="You have been invited to a team meeting at 3:00 PM",
-        actions=[accept_action, decline_action]
-    )
-    
-    # Handle notification action responses
-    def on_notification_action(e):
-        action_id = e.data["actionId"]
-        if action_id == "accept":
-            page.snack_bar = ft.SnackBar(content=ft.Text("Meeting accepted!"))
-            page.snack_bar.open = True
-        elif action_id == "decline":
-            page.snack_bar = ft.SnackBar(content=ft.Text("Meeting declined!"))
-            page.snack_bar.open = True
-        page.update()
-    
-    # Subscribe to notification action events
-    notifications.on_notification_action = on_notification_action
+    # If your Flet version does not register services automatically,
+    # add it explicitly:
+    # page.services.append(notifications)
 
-ft.app(main)
+    await notifications.request_permissions()
+    await notifications.show_notification(id=1, title="Hello", body="From Flet")
+
+
+ft.run(main)
 ```
 
-Note: The availability and appearance of notification actions may vary depending on the platform (iOS, Android, macOS).
+> Custom extensions need `flet build`. `flet run` alone shows "Unknown
+> service" / "Unknown control" because it uses a prebuilt binary.
+
+## Methods
+
+All methods are coroutines and return `bool`. Each accepts an optional
+`timeout` (seconds).
+
+```python
+await show_notification(id: int, title: str, body: str,
+                        payload: str | None = None,
+                        actions: list[NotificationAction] | None = None) -> bool
+
+await schedule_notification(id: int, title: str, body: str,
+                            scheduled_date: datetime,
+                            payload: str | None = None,
+                            actions: list[NotificationAction] | None = None) -> bool
+
+await request_permissions() -> bool
 ```
 
-This documentation update adds comprehensive information about the notification actions feature, including:
+## Notification actions
 
-1. Updated method signatures to include the `actions` parameter
-2. A new section dedicated to notification actions
-3. Details about the `NotificationAction` class and its parameters
-4. An example of how to create and use notification actions
-5. Information about handling action responses
+```python
+from flet_notifications import LocalNotifications, NotificationAction
+
+accept = NotificationAction(id="accept", title="Accept")
+decline = NotificationAction(id="decline", title="Decline", destructive=True)
+
+await notifications.show_notification(
+    id=1,
+    title="Meeting Invitation",
+    body="Team meeting at 3:00 PM",
+    actions=[accept, decline],
+)
+```
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `id` | `str` | | Reported back in the event. |
+| `title` | `str` | | Button text. |
+| `destructive` | `bool` | `False` | Destructive styling (iOS/macOS). |
+| `foreground` | `bool` | `True` | Bring the app to the foreground when pressed. |
+
+## Handling taps and actions
+
+```python
+def on_action(e: NotificationActionEvent):
+    print(e.action_id, e.payload)   # action_id is "tap" for the notification body
+
+notifications = LocalNotifications(on_notification_action=on_action)
+```
+
+`e.action_id` is the pressed `NotificationAction.id`, or `"tap"` when the
+notification itself was tapped. `e.payload` is the payload passed when the
+notification was created (empty string if none).
+
+## Migrating from 0.1.x (Flet 0.27)
+
+- Requires `flet>=1.0.0`.
+- Do not add `LocalNotifications` to `page.overlay`.
+- Handlers receive `NotificationActionEvent` (`e.action_id`, `e.payload`)
+  instead of `e.data["actionId"]`.
+- Methods return real booleans.
+
+Notification actions may look different per platform. On iOS/macOS the
+buttons currently come from a fixed built-in category.
