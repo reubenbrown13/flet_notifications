@@ -11,6 +11,12 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   bool _isInitialized = false;
 
+  // The Linux plugin has no scheduler API, so scheduled notifications there
+  // are emulated with in-process timers (they only fire while the app runs).
+  final Map<int, Timer> _linuxTimers = <int, Timer>{};
+
+  bool get _isLinux => !kIsWeb && defaultTargetPlatform == TargetPlatform.linux;
+
   factory NotificationService() {
     return _instance;
   }
@@ -92,12 +98,13 @@ class NotificationService {
     // Linux initialization (required when running on Linux)
     const LinuxInitializationSettings initializationSettingsLinux =
         LinuxInitializationSettings(defaultActionName: 'Open notification');
- 
+
     // Combine settings
     final InitializationSettings initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid,
         iOS: initializationSettingsIOS,
-        macOS: initializationSettingsMacOS);
+        macOS: initializationSettingsMacOS,
+        linux: initializationSettingsLinux);
     
     // Initialize plugin
     await flutterLocalNotificationsPlugin.initialize(
@@ -252,6 +259,19 @@ class NotificationService {
       macOS: darwinDetails,
     );
     
+    if (_isLinux) {
+      // zonedSchedule is not supported on Linux: emulate it with a timer.
+      final delay = scheduledDate.difference(DateTime.now());
+      _linuxTimers[id]?.cancel();
+      _linuxTimers[id] = Timer(delay.isNegative ? Duration.zero : delay, () {
+        _linuxTimers.remove(id);
+        unawaited(showNotification(id, title, body,
+            payload: payload, actions: actions));
+      });
+      debugPrint('Notification scheduled with a timer for: $scheduledDate');
+      return true;
+    }
+
     // Schedule notification
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
@@ -277,6 +297,11 @@ class NotificationService {
       await initialize();
     }
     
+    // Linux has no notification permission prompt.
+    if (_isLinux) {
+      return true;
+    }
+
     // Android
     bool? androidResult;
     try {
@@ -342,7 +367,8 @@ class NotificationActionData {
 class LocalNotificationsService extends FletService {
   LocalNotificationsService({required super.control});
 
-  final NotificationService _notificationService = NotificationService();
+  // Lazy so that constructing the service can never throw before init().
+  late final NotificationService _notificationService = NotificationService();
 
   late final void Function(String, String) _onAction =
       (String actionId, String payload) {
@@ -356,6 +382,7 @@ class LocalNotificationsService extends FletService {
   void init() {
     super.init();
     control.addInvokeMethodListener(_invokeMethod);
+    debugPrint('flet_notifications: LocalNotifications listener registered');
     unawaited(_initializeNotifications());
   }
 
